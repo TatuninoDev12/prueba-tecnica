@@ -1,12 +1,11 @@
 import { useNasaData } from "@/hook/useNasaData";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import styled from "styled-components";
 
-interface SpanStatusProps {
-  status: string;
-}
-
 const Home = () => {
-  // const { currentPage } = usePaginationStore()
+  const queryClient = useQueryClient();
+  const [deletedId, setDeletedId] = useState < Set < number | null >> (new Set());
   const {
     isLoading,
     error,
@@ -18,6 +17,9 @@ const Home = () => {
   } = useNasaData(1, 12);
 
   const allPhotos = data?.pages.flatMap((page) => page.photos) || [];
+  const allPhotosFiltered = allPhotos.filter(
+    (photo) => !deletedId.has(photo.id)
+  );
 
   const handleLoadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -25,15 +27,44 @@ const Home = () => {
     }
   };
 
-  if (isLoading) return <div>Loading initial photos...</div>;
+  const handleDelete = (id) => {
+    setDeletedId((prev) => new Set([...prev, id]));
+
+    queryClient.setQueryData(["photos"], (oldData) => ({
+      pages: oldData.pages.map((page) => ({
+        ...page,
+        photos: page.photos.filter((photo) => photo.id !== id),
+      })),
+      pageParams: oldData.pageParams,
+    }));
+  };
+
+  if (isLoading) return <Loader>Loading initial photos...</Loader>;
   if (isError) return <div>Error: {error.message}</div>;
 
   return (
     <Container>
       <h1>Mars Rover Photos</h1>
       <PhotoGrid>
-        {allPhotos.map((photo) => (
+        {allPhotosFiltered.map((photo) => (
           <article key={photo.id} className="photo-card">
+            <button
+              className="delete-btn"
+              onClick={() => handleDelete(photo.id)}
+              aria-label="Delete photo"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+              >
+                <path
+                  fill="currentColor"
+                  d="M17 6h5v2h-2v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8H2V6h5V3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3zm1 2H6v12h12V8zm-9 3h2v7H9v-7zm4 0h2v7h-2v-7zM9 4v2h6V4H9z"
+                />
+              </svg>
+            </button>
             <img
               src={photo.img_src}
               alt={`Mars - ${photo.camera.full_name}`}
@@ -80,6 +111,23 @@ const Home = () => {
   );
 };
 
+const Loader = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 2rem;
+  color: #000;
+  font-weight: bold;
+  text-align: center;
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+  @media (max-width: 480px) {
+    font-size: 1.2rem;
+  }
+`;
+
 const Container = styled.div`
   width: min(100% - 3rem, 1440px);
   margin-inline: auto;
@@ -90,6 +138,7 @@ const Container = styled.div`
     overflow: hidden;
     box-shadow: 0 3px 0px 1px rgb(219, 210, 199);
     transition: transform 0.3s ease;
+    position: relative;
     &:hover {
       transform: scale(1.02);
     }
@@ -98,13 +147,39 @@ const Container = styled.div`
       height: 200px;
       object-fit: cover;
     }
+    .delete-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      background: rgba(255, 77, 79, 0.9);
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #fff;
+      transition: background 0.2s ease, transform 0.2s ease;
+      z-index: 10;
+      box-shadow: 0 2px 10px 1px rgba(0, 0, 0, 0.51);
+      &:hover {
+        background: #ff4d4f;
+        transform: scale(1.1);
+      }
+
+      svg {
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+      }
+    }
   }
 
   .photo-meta {
     padding: 12px;
     display: flex;
     justify-content: space-between;
-    font-size: 0.8em;
+    font-size: 0.9em;
     color: #000;
     flex-direction: column;
     gap: 0.5rem;
@@ -116,6 +191,8 @@ const PhotoGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, minmax(280px, 1fr));
   gap: 1.5rem;
+  font-size: 0.9rem;
+  position: relative;
 
   margin-bottom: 2rem;
   @media (max-width: 1200px) {
@@ -153,6 +230,8 @@ const LoadMoreButton = styled.div`
     border: none;
     padding: 1rem 2.5rem;
     border-radius: 30px;
+    box-shadow: 0 3px 0px 1px rgb(219, 210, 199);
+    font-weight: bold;
     font-size: 1rem;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -161,7 +240,7 @@ const LoadMoreButton = styled.div`
   }
 
   .load-more-btn:disabled {
-    background: #6c757d;
+    background: rgb(219, 210, 199);
     cursor: not-allowed;
   }
 
@@ -183,10 +262,10 @@ const LoadMoreButton = styled.div`
   }
 `;
 
-const SpanStatus = styled.span<SpanStatusProps>`
+const SpanStatus = styled.span`
   color: ${(props) => (props.status === "active" ? "green" : "red")};
   font-weight: bold;
-  font-size: 0.9em;
+  font-size: 0.9rem;
   position: relative;
   diplay: flex;
   justify-content: center;
@@ -196,9 +275,11 @@ const SpanStatus = styled.span<SpanStatusProps>`
   border-radius: 15px;
   border: 1px dashed ${(props) => (props.status === "active" ? "green" : "red")};
   padding: 2px 5px;
+  width: 100px;
+  margin: 0 auto;
   &:hover {
     background-color: ${(props) =>
-      props.status === "active" ? "#d4edda" : "#f8d7da"};
+    props.status === "active" ? "#d4edda" : "#f8d7da"};
   }
   transition: background-color 0.3s ease;
 `;
