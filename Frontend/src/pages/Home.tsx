@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 const Home = () => {
   const queryClient = useQueryClient();
-  const [deletedId, setDeletedId] = useState < Set < number | null >> (new Set());
+  const [deletedId, setDeletedId] = useState<Set<number | null>>(new Set());
   const {
     isLoading,
     error,
@@ -31,11 +31,11 @@ const Home = () => {
     setDeletedId((prev) => new Set([...prev, id]));
 
     queryClient.setQueryData(["photos"], (oldData) => ({
-      pages: oldData.pages.map((page) => ({
+      pages: (oldData?.pages || []).map((page) => ({
         ...page,
         photos: page.photos.filter((photo) => photo.id !== id),
       })),
-      pageParams: oldData.pageParams,
+      pageParams: oldData?.pageParams,
     }));
   };
 
