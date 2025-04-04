@@ -10,5 +10,11 @@ router.post(
   warehouseController.createWarehouse
 );
 router.get("/", authenticate, warehouseController.getWarehouses);
+router.delete(
+  "/:id",
+  authenticate,
+  authorize(["admin"]),
+  warehouseController.deleteWarehouse
+);
 
 module.exports = router;

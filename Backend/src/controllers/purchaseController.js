@@ -2,14 +2,20 @@ const db = require("../config/db");
 
 exports.createPurchase = async (req, res) => {
   try {
-    const { ClienteId, ArticuloId, units, warehouse } = req.body;
+    const { ClienteId, ArticuloId, units } = req.body;
     // Validate required fields
-    const requiredFields = ["ClienteId", "ArticuloId", "units", "warehouse"];
+    const requiredFields = ["ClienteId", "ArticuloId", "units"];
     const missingFields = requiredFields.filter((field) => !req.body[field]);
     if (missingFields.length > 0) {
       return res.status(400).json({
         error: `Missing required fields: ${missingFields.join(", ")}`,
       });
+    }
+
+    // validate client
+    const client = await db("tblcliente").where("ClienteId", ClienteId).first();
+    if (!client) {
+      return res.status(404).json({ error: "Client not found" });
     }
 
     // search price article
@@ -20,12 +26,21 @@ exports.createPurchase = async (req, res) => {
       return res.status(404).json({ error: "Article not found" });
     }
 
+    // search warehouse
+    const warehouse = await db("warehouse")
+      .where("warehouseId", article.warehouseId)
+      .first();
+    if (!warehouse) {
+      return res.status(404).json({ error: "Warehouse not found" });
+    }
+
     const [newPurchase] = await db("tblpedido")
       .insert({
         ClienteId,
         ArticuloId,
         units,
-        warehouse,
+        warehouseId: warehouse.warehouseId,
+        price: article.price,
         total: units * article.price,
       })
       .returning("*");
@@ -74,5 +89,49 @@ exports.getClientPurchases = async (req, res) => {
     res.json(purchases);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+exports.updatePurchase = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // validate purchaseId
+
+    const purchase = await db("tblpedido").where("purchaseId", id).first();
+    if (!purchase) {
+      return res.status(404).json({ error: "Purchase not found" });
+    }
+    const { units } = req.body;
+    if (!units) {
+      return res.status(400).json({ error: "Missing required units" });
+    }
+    const [updatedPurchase] = await db("tblpedido")
+      .where("purchaseId", id)
+      .update({
+        units,
+        total: units * purchase.price,
+      })
+      .returning("*");
+
+    res.status(200).json(updatedPurchase);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+exports.deletePurchase = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const purchase = await db("tblpedido").where("purchaseId", id).first();
+    if (!purchase) {
+      return res.status(404).json({ error: "Purchase not found" });
+    }
+
+    await db("tblpedido").where("purchaseId", id).del();
+
+    res.status(200).json({ message: "Purchase deleted successfully" });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 };

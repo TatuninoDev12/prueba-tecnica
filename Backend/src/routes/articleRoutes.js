@@ -12,4 +12,17 @@ router.post(
 
 router.get("/", authenticate, articleController.getArticles);
 
+router.put(
+  "/:id",
+  authenticate,
+  authorize(["admin"]),
+  articleController.updateArticle
+);
+router.delete(
+  "/:id",
+  authenticate,
+  authorize(["admin"]),
+  articleController.deleteArticle
+);
+
 module.exports = router;

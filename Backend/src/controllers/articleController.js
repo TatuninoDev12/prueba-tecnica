@@ -116,3 +116,105 @@ exports.getArticles = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.updateArticle = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if the article exists
+    const existingArticle = await knex("tblArticulo")
+      .where({ ArticuloId: id })
+      .first();
+
+    if (!existingArticle) {
+      return res.status(404).json({
+        error: "Article not found",
+      });
+    }
+
+    // Check if the warehouse exists
+    if (req.body.warehouseId) {
+      const existingWarehouse = await knex("warehouse")
+        .where({ warehouseId: req.body.warehouseId })
+        .first();
+      if (!existingWarehouse) {
+        return res.status(400).json({
+          error: "Warehouse with this ID does not exist",
+        });
+      }
+      // get the warehouse name
+      const warehouseName = existingWarehouse.name;
+      const warehouseId = existingWarehouse.warehouseId;
+      const updatedArticle = await knex("tblArticulo")
+        .where({ ArticuloId: id })
+        .update({
+          ...req.body,
+          warehouseName,
+          warehouseId,
+        });
+      if (updatedArticle) {
+        const article = await knex("tblArticulo")
+          .where({ ArticuloId: id })
+          .first();
+        return res.status(200).json({
+          message: "Article updated successfully",
+          article,
+        });
+      }
+      return res.status(400).json({
+        error: "Error updating article",
+      });
+    }
+    // Update the article
+    const updatedArticle = await knex("tblArticulo")
+      .where({ ArticuloId: id })
+      .update(req.body);
+    if (updatedArticle) {
+      const article = await knex("tblArticulo")
+        .where({ ArticuloId: id })
+        .first();
+      return res.status(200).json({
+        message: "Article updated successfully",
+        article,
+      });
+    }
+    return res.status(400).json({
+      error: "Error updating article",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({
+      message: "Error updating article",
+      error,
+    });
+  }
+};
+
+exports.deleteArticle = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if the article exists
+    const existingArticle = await knex("tblArticulo")
+      .where({ ArticuloId: id })
+      .first();
+
+    if (!existingArticle) {
+      return res.status(404).json({
+        error: "Article not found",
+      });
+    }
+
+    // Delete the article
+    await knex("tblArticulo").where({ ArticuloId: id }).del();
+    res.status(200).json({
+      message: "Article deleted successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({
+      message: "Error deleting article",
+      error,
+    });
+  }
+};

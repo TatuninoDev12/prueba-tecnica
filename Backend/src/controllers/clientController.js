@@ -2,7 +2,8 @@ const db = require("../config/db");
 
 exports.createClient = async (req, res) => {
   try {
-    const requiredFields = ["name", "phone"];
+    const requiredFields = ["name", "phone", "type"];
+    const { name, phone, type } = req.body;
     const missingFields = requiredFields.filter((field) => !req.body[field]);
 
     if (missingFields.length > 0) {
@@ -11,7 +12,9 @@ exports.createClient = async (req, res) => {
       });
     }
 
-    const [client] = await db("tblcliente").insert(req.body).returning("*");
+    const [client] = await db("tblcliente")
+      .insert({ name, phone, type })
+      .returning("*");
 
     res.status(201).json(client);
   } catch (error) {
@@ -83,4 +86,52 @@ exports.getClientPurchases = async (req, res) => {
   }
 };
 
-// Add updateClient and deleteClient methods similarly
+exports.updateClient = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    //validate if the client exists
+    const client = await db("tblcliente").where("ClienteId", id).first();
+    if (!client) {
+      return res.status(404).json({ error: "Client not found" });
+    }
+
+    const updatedClient = await db("tblcliente")
+      .where("ClienteId", id)
+      .update(req.body)
+      .returning("*");
+
+    if (!updatedClient) {
+      return res.status(404).json({ error: "Client not found" });
+    }
+
+    res.status(200).json(updatedClient);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+exports.deleteClient = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    //validate if the client exists
+    const client = await db("tblcliente").where("ClienteId", id).first();
+    if (!client) {
+      return res.status(404).json({ error: "Client not found" });
+    }
+
+    const deletedClient = await db("tblcliente")
+      .where("ClienteId", id)
+      .del()
+      .returning("*");
+
+    if (!deletedClient) {
+      return res.status(404).json({ error: "Client not found" });
+    }
+
+    res.status(200).json({ message: "Client deleted successfully " });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};

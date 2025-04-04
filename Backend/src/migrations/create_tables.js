@@ -44,9 +44,10 @@ exports.up = function (knex) {
       table.increments("purchaseId").primary();
       table.integer("ClienteId").references("ClienteId").inTable("tblcliente");
       table.integer("ArticuloId").notNullable();
-      table.string("warehouse").notNullable();
+      table.string("warehouseId").notNullable();
       table.integer("units").defaultTo(0);
       table.integer("total").defaultTo(0);
+      table.decimal("price", 10, 2).notNullable();
       table
         .foreign("ArticuloId")
         .references("ArticuloId")

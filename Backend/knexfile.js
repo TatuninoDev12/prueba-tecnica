@@ -9,6 +9,9 @@ module.exports = {
     migrations: {
       directory: "./src/migrations",
     },
+    seeds: {
+      directory: "./src/seeds", // Asegúrate que esta ruta sea correcta
+    },
     useNullAsDefault: true,
   },
   test: {
@@ -17,6 +20,9 @@ module.exports = {
     useNullAsDefault: true,
     migrations: {
       directory: "./src/migrations",
+    },
+    seeds: {
+      directory: "./src/seeds", // Asegúrate que esta ruta sea correcta
     },
   },
 };

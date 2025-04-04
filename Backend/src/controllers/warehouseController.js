@@ -41,3 +41,26 @@ exports.getWarehouses = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.deleteWarehouse = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if warehouse has articles
+    // const hasArticles = await knex("tblArticulo")
+    //   .where("warehouseId", id)
+    //   .first();
+
+    // if (hasArticles) {
+    //   return res.status(400).json({
+    //     message: "Cannot delete warehouse with existing articles",
+    //   });
+    // }
+
+    await knex("warehouse").where("warehouseId", id).del();
+    res.status(200).json({ message: "Warehouse deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};

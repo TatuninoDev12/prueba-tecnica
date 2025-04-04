@@ -11,4 +11,18 @@ router.post(
 );
 router.get("/", authenticate, purchaseController.getClientPurchases);
 
+router.put(
+  "/:id",
+  authenticate,
+  authorize(["admin"]),
+  purchaseController.updatePurchase
+);
+
+router.delete(
+  "/:id",
+  authenticate,
+  authorize(["admin"]),
+  purchaseController.deletePurchase
+);
+
 module.exports = router;

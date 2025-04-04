@@ -14,6 +14,18 @@ router.get("/", authenticate, clientController.getClients);
 
 router.get("/:id/purchases", authenticate, clientController.getClientPurchases);
 
-// Add PUT and DELETE routes similarly
+router.put(
+  "/:id",
+  authenticate,
+  authorize(["admin"]),
+  clientController.updateClient
+);
+
+router.delete(
+  "/:id",
+  authenticate,
+  authorize(["admin"]),
+  clientController.deleteClient
+);
 
 module.exports = router;
