@@ -2,7 +2,7 @@
   <a href="" rel="noopener">
 </p>
 
-<h3 align="center">Almacen PI</h3>
+<h3 align="center">Almacen API</h3>
 
 ---
 
@@ -156,11 +156,11 @@ http://localhost:3000
   ```
 - GET /api/articles
   Obtiene una lista de artículos.
-  Headers: Authorization: Bearer <token>
+  Headers: Authorization: Bearer token
 
 - PUT /api/articles/:id
   Actualiza un artículo existente.
-  Headers: Authorization: Bearer <token>
+  Headers: Authorization: Bearer token
   Body:
 
   ```json
@@ -171,13 +171,13 @@ http://localhost:3000
 
   - DELETE /api/articles/:id
     Elimina un artículo.
-    Headers: Authorization: Bearer <token>
+    Headers: Authorization: Bearer token
 
 ### Compras
 
 - POST /api/purchases
   Crea una nueva compra.
-  Headers: Authorization: Bearer <token>
+  Headers: Authorization: Bearer token
   Body:
 
   ```json
@@ -190,11 +190,11 @@ http://localhost:3000
 
 - GET /api/purchases
   Obtiene una lista de compras.
-  Headers: Authorization: Bearer <token>
+  Headers: Authorization: Bearer token
 
 - PUT /api/purchases/:id
   Actualiza una compra existente.
-  Headers: Authorization: Bearer <token>
+  Headers: Authorization: Bearer token
   Body:
   ```json
   {
@@ -203,13 +203,13 @@ http://localhost:3000
   ```
 - DELETE /api/purchases/:id
   Elimina una compra.
-  Headers: Authorization: Bearer <token>
+  Headers: Authorization: Bearer token
 
 ### Almacenes
 
 - POST /api/warehouse
   Crea un nuevo almacén.
-  Headers: Authorization: Bearer <token>
+  Headers: Authorization: Bearer token
   Body:
   ```json
   {
@@ -220,11 +220,11 @@ http://localhost:3000
   ```
 - GET /api/warehouse
   Obtiene una lista de almacenes.
-  Headers: Authorization: Bearer <token>
+  Headers: Authorization: Bearer token
 
 - DELETE /api/warehouse/:id
   Elimina un almacén.
-  Headers: Authorization: Bearer <token>
+  Headers: Authorization: Bearer token
 
 ### Test
 
